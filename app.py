@@ -10,4 +10,4 @@ IPadd= socket.gethostbyname(hostname)
 print(f"IP Address: {IPadd}")
 
 for i in range(5):
-    print(f"Iteration {i1}"
+    print(f"count: {i}")

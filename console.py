@@ -31,7 +31,7 @@ def configurar_dispositivo(ser, nombre, usuario, contrasena, dominio):
         f"hostname {nombre}",
         f"username {usuario} password {contrasena}",
         f"ip domain-name {dominio}",
-        "crypto key generate rsa",
+        "crypto key generate rsa modulus 1024"  # Se puede ajustar el tamaño si es necesario,
     ]
 
     for cmd in comandos:
@@ -66,7 +66,6 @@ def cargar_y_configurar():
     """Lee el Excel y configura el dispositivo si hay coincidencia."""
     df = pd.read_excel(r"C:\Users\gamer\OneDrive\Documentos\dispositivos_ejemplo.xlsx")
     
-
     # Validar columnas
     columnas = {"modelo", "serie", "puerto", "baudios", "nombre", "usuario", "contrasena", "dominio"}
     if not columnas.issubset(df.columns):
@@ -78,17 +77,17 @@ def cargar_y_configurar():
         baudios = int(fila["baudios"])
 
         try:
-            print(f"\n🔌 Conectando al puerto {puerto}...")
+            print(f"\nConectando al puerto {puerto}...")
             ser = serial.Serial(puerto, baudios, timeout=2)
             time.sleep(2)
 
             # Obtener modelo y serie reales del dispositivo
             modelo_real, serie_real, salida = obtener_modelo_serie(ser)
-            print(f"📋 Modelo detectado: {modelo_real}, Serie: {serie_real}")
+            print(f"Modelo detectado: {modelo_real}, Serie: {serie_real}")
 
             # Comparar con Excel
             if modelo_real == fila["modelo"] and serie_real == fila["serie"]:
-                print("✅ Coincidencia encontrada en Excel, configurando...")
+                print("Coincidencia encontrada, configurando...")
                 configurar_dispositivo(
                     ser,
                     fila["nombre"],
@@ -96,6 +95,8 @@ def cargar_y_configurar():
                     fila["contrasena"],
                     fila["dominio"]
                 )
+                ser.close()
+                break
             else:
                 print("⚠ No coincide con el Excel, se omite configuración.")
                 print("Salida completa de 'show inventory':\n", salida)
@@ -103,10 +104,8 @@ def cargar_y_configurar():
             ser.close()
 
         except Exception as e:
-            print(f"❌ Error en {puerto}: {e}")
+            print(f" Error en {puerto}: {e}")
 
-
-# ========= MAIN =========
 
 if __name__ == "__main__":
     cargar_y_configurar()
